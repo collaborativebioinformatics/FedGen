@@ -68,11 +68,11 @@ cd data/simulated_sites
 # Make script executable
 chmod +x generate_federated_sites.sh
 
-# Run simulation
-./generate_federated_sites.sh
+# Run simulation at each site (replace <site_number> with 1-10)
+./generate_federated_sites.sh <site_number>
 
 # Or run in background with logging
-nohup ./generate_federated_sites.sh > generation.log 2>&1 &
+nohup ./generate_federated_sites.sh <site_number> > generation.log 2>&1 &
 tail -f generation.log
 ```
 
