@@ -1,5 +1,4 @@
-# Fed_learning_infrastructure
-Federated Learning (FL) Infrastructure &amp; Synthetic Data
+# FedGen: Federated Learning (FL) Infrastructure &amp; Synthetic Data
 
 <img src="./resources/Fed_learning_infrastructure_logo.png" alt="Federated learning infrastructure logo" width="300" height="300">
 
