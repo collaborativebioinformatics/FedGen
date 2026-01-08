@@ -27,7 +27,7 @@ Simulated genomic datasets for 10 federated learning sites representing distribu
 data/simulated_sites/
 ├── generate_federated_sites.sh    # Generation script
 ├── README.md                        # This file
-├── ldak6.1.mac                      # LDAK binary (not in git)
+├── ldak6.1.{mac|linux}              # LDAK binary (not in git) - replace with your OS type
 └── site1/ through site10/           # Generated data (not in git)
     ├── site{N}_geno.bed/bim/fam    # Genotype data (PLINK format)
     ├── site{N}_pheno.pheno          # Phenotype data
@@ -40,8 +40,20 @@ data/simulated_sites/
 ### Prerequisites
 1. **LDAK 6.1+**: Download from https://dougspeed.com
 ```bash
-   curl -L -o ldak6.1.mac https://github.com/dougspeed/LDAK/raw/main/ldak6.1.mac
-   chmod +x ldak6.1.mac
+   case "$(uname -s)" in
+      Darwin)
+         export OS_TYPE="mac"
+         ;;
+      Linux*)
+         export OS_TYPE="linux"
+         ;;
+      *)
+         echo $"Unsupported OS. Please use macOS or Linux."
+         exit 1
+         ;;
+   esac
+   curl -L -o ldak6.1.${OS_TYPE} https://github.com/dougspeed/LDAK/raw/main/ldak6.1.${OS_TYPE}
+   chmod +x ldak6.1.${OS_TYPE}
 ```
 
 2. **System requirements**:

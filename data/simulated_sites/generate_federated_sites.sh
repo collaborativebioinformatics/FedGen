@@ -5,7 +5,20 @@ samples=(100000 95000 110000 88000 105000 92000 98000 103000 97000 101000)
 nsnps=(500000 480000 520000 450000 510000 490000 505000 495000 515000 485000)
 
 # LDAK binary path - update this to your local path
-LDAK="./ldak6.1.mac"
+case "$(uname -s)" in
+    Darwin)
+        export OS_TYPE="mac"
+        ;;
+    Linux*)
+        export OS_TYPE="linux"
+        ;;
+    *)
+        echo $"Unsupported OS. Please use macOS or Linux."
+        exit 1
+        ;;
+esac
+
+LDAK="./ldak6.1.${OS_TYPE}"
 
 echo "========================================"
 echo "Federated Genomic Data Simulation"
