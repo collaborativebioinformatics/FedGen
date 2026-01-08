@@ -1,6 +1,47 @@
 # Fed_learning_infrastructure
 Federated Learning (FL) Infrastructure &amp; Synthetic Data
 
+<img src="./resources/Fed_learning_infrastructure_logo.png" alt="Federated learning infrastructure logo" width="300" height="300">
+
+## Contributors
+1. Holger Roth
+2. Pravesh Parekh
+3. Srikant Sarangi
+4. Enamul Shimul
+5. Espen Hagen
+6. Mariona Jaramillo Civill
+7. Ioannis Christofilogiannis
+8. Konstantinos Koukoutegos
+
+## Introduction
+Large-scale genomic studies increasingly rely on multi-site collaboration to achieve sufficient statistical power for complex disease analysis. However, sharing individual-level genomic data across institutions is often constrained by privacy regulations, ethical considerations, and governance policies. Federated learning (FL) offers a promising paradigm to address these challenges by enabling collaborative model training without centralizing raw data. This project aims to design and evaluate an end-to-end federated learning framework for genome-wide association–style analyses using realistically simulated genotype and phenotype data. Synthetic genomic datasets are generated to closely resemble real-world data properties, including linkage disequilibrium (LD) structure, per-site variability, covariates, and site-level data imbalance. On top of this synthetic data layer, a federated learning infrastructure is deployed using an FL server–client architecture using NVFlare on AWS. Multiple client sites represent independent data holders with heterogeneous sample sizes and phenotype distributions, while our learning task is focused on binary phenotype prediction (Parkinson’s disease case/control status) using a logistic regression predictor.
+
+## Goals
+The goal of this project is to establish a realistic and extensible experimental framework for federated learning in genomics by combining synthetic data generation, scalable infrastructure, and privacy-aware modeling. Specifically, we aim to generate biologically plausible synthetic genotype and phenotype data with preserved LD structure, standardized genome builds, and meaningful covariates, while enabling per-site heterogeneity that mirrors real-world cohort imbalance. In parallel, we seek to deploy and evaluate a federated learning system using NVFlare on cloud infrastructure, supporting multiple client sites, containerized workflows, and continuous monitoring and validation. Within this framework, we aim to implement a state-of-the-art genotype–phenotype statistical model trained directly from PLINK-formatted data, using a custom federated training aggregator strategy, and quantify the framework's performance, robustness, and scalability. 
+
+## Methods
+1. Explain the synthetic data generation process
+    - Tool used
+    - Client-specific params to create diversity
+    - Imbalances
+    - Skewness
+2. Explain the federated learning strategy
+    - Spin up process on AWS. Install necessary requiremets on venv like nvflare, docker, etc.
+    - Spin up processes on Brev (10 clients)
+3. Explain the meta-analysis process
+    - Use the global model to perform the final meta-analysis in each client site
+
+## Results
+
+## Future direction
+
+
+
+
+
+
+
+
 
 ## Topics
 
