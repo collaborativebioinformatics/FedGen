@@ -37,6 +37,8 @@ Federated learning was implemented using a centralized server–client architect
 
 Within the GWAS world, there are two well-established approaches for performing meta-analysis ("aggregation" across sites): fixed-effects meta-analysis and random-effects meta analysis. Once we have performed GWASes for each site, the summary statistics include the beta coefficient and the standard error, for each genetic variant. Then, the fixed-effects approach to getting an aggregate effect size is to do an inverse variance weighted-summing of the beta coefficients to get an overall effect size. However, this approach does not account for between-study (or between-site) variances. The random-effects meta-analysis approach explicitly accounts for between-site variance by explicitly including a variance component, estimated based on heterogeniety test. In our approach, we allow the users to perform both types of meta-analyses. The random effects meta-analysis is implemented via a call to the GWAMA software (Magi et al., 2010). In practical terms, the output from the site-specific GWASes are first re-organised to meet the GWAMA required format; then, within the aggregator function, we perform a system call to the GWAMA tool, and finally, reformat the output from GWAMA to match the requirements for NVFLARE ecosystem.
 
+<img src="./resources/Methods_MetaAnalysis.svg" alt="FL architecture" width="600" height="600">
+
 ## Results
 
 ## Future direction
