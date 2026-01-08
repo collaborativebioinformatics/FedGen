@@ -30,7 +30,7 @@ We generated realistic synthetic dataset for 10 different sites using the LDAK s
 
 Federated learning was implemented using a centralized server–client architecture orchestrated with NVFlare. The federated server was deployed on an AWS compute instance and served as the coordinator for model aggregation, round management, and secure communication. A dedicated Python virtual environment (venv) was created on the AWS instance to ensure dependency isolation and reproducibility. The server process was initialized using NVFlare’s provisioning and startup utilities and remained persistently active throughout training to manage federated rounds and aggregate client updates. Federated clients were deployed across ten independent compute instances provisioned using Brev. Each client ran inside a Docker container to ensure environmental consistency across heterogeneous hardware. Client containers were built from a common Docker image that defined a venv with identical package versions to those used by the server where applicable, including nvflare 2.7.1. During runtime, each client container connected to the central AWS-hosted server and participated in synchronous federated learning rounds by locally training the model on its private data and transmitting only model parameters back to the server, without any raw data leaving the client environments.
 
-<img src="./resources/fl_architecture.png" alt="FL architecture" width="900" height="500">
+<img src="./resources/fl_architecture.png" alt="FL architecture" width="800" height="450">
 
 3. Meta-analysis (aggregation)
 
