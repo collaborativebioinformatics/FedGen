@@ -24,6 +24,7 @@
 import argparse
 import pandas as pd
 import numpy as np
+from scipy.stats import norm
 
 
 def parse_args():
@@ -39,9 +40,10 @@ def main():
 
     gwas = pd.read_csv(args.input, sep="\s+")
     if args.mode == 'or':
+        z_score = norm.ppf(0.975) # 97.5 percentile
         gwas['OR'] = np.exp(gwas['BETA'])
-        gwas['OR_95L'] = np.exp(gwas['BETA'] - 1.96 * gwas['SE'])
-        gwas['OR_95U'] = np.exp(gwas['BETA'] + 1.96 * gwas['SE'])
+        gwas['OR_95L'] = np.exp(gwas['BETA'] - z_score * gwas['SE'])
+        gwas['OR_95U'] = np.exp(gwas['BETA'] + z_score * gwas['SE'])
 
         gwas.rename(columns={'ID': 'MARKERNAME', 'ALLELE1': 'EA', 'ALLELE0': 'NEA'}, inplace=True)
         gwas[['MARKERNAME', 'EA', 'NEA', 'OR', 'OR_95L', 'OR_95U', 'BETA', 'SE']].to_csv(args.output, sep="\t", index=False)
