@@ -27,6 +27,14 @@ from nvflare.app_common.aggregators.model_aggregator import ModelAggregator
 from nvflare.client import FLModel
 
 from regenie2gwama import regenie2gwama
+from nvflare.apis.fl_constant import FLContextKey
+from nvflare.apis.fl_context import FLContext
+
+def _get_run_dir(fl_ctx: FLContext):
+    job_id = fl_ctx.get_job_id()
+    workspace = fl_ctx.get_prop(FLContextKey.WORKSPACE_OBJECT)
+    run_dir = workspace.get_run_dir(job_id)
+    return run_dir
 
 
 class GWASMetaAggregator(ModelAggregator):
@@ -35,24 +43,18 @@ class GWASMetaAggregator(ModelAggregator):
     inverse-variance weighted meta-analysis during aggregation.
     """
 
-    def __init__(self, output_dir="./server_results", simple_meta_analysis=False):
+    def __init__(self, output_folder="server_results", simple_meta_analysis=False):
         super().__init__()
         self.client_betas = []
         self.client_ses = []
         self.received_params_type = None
-        self.output_dir = output_dir
-        self.gwama_input_file = os.path.join(self.output_dir, "gwama.in")
+        self.output_folder = output_folder
+        
         self.simple_meta_analysis = simple_meta_analysis
-        
-        # Create output directory if it doesn't exist
-        os.makedirs(self.output_dir, exist_ok=True)
-        
-        # Initialize gwama.in file (clear it if it exists)
-        with open(self.gwama_input_file, 'w') as f:
-            f.write("")  # Clear the file
-        
-        print(f"GWASMetaAggregator initialized. Results will be saved to: {self.output_dir}")
-        print(f"GWAMA input file will be created at: {self.gwama_input_file}")
+        # Will be set in accept_model
+        self.gwama_input_file = None
+        self.job_dir = None  
+        self.output_dir = None  
 
     def accept_model(self, model: FLModel):
         """
@@ -64,6 +66,23 @@ class GWASMetaAggregator(ModelAggregator):
             self.received_params_type = model.params_type
 
         params = model.params
+
+        # Create output directory if it doesn't exist
+        if self.output_dir is None:
+            self.job_dir = _get_run_dir(self.fl_ctx)
+            self.output_dir = os.path.join(self.job_dir, self.output_folder)
+            if not os.path.exists(self.output_dir):
+                os.makedirs(self.output_dir)
+                print(f"Created output directory: {self.output_dir}")
+            print("Created GWAMA output directory at: ", self.output_dir)
+
+            self.gwama_input_file = os.path.join(self.output_dir, "gwama.in")
+            # Initialize gwama.in file (clear it if it exists)
+            with open(self.gwama_input_file, 'w') as f:
+                f.write("")  # Clear the file
+            
+            print(f"GWAMA input file will be created at: {self.gwama_input_file}")
+            
         
         # Check if this is an error response
         if params.get("SUCCESS") == False:
@@ -137,10 +156,15 @@ class GWASMetaAggregator(ModelAggregator):
             aggregated_params = {
                 "beta": meta_beta,
                 "se": meta_se,
+                "SIMPLE_META_ANALYSIS_COMPLETED": False,
             }
 
             print(f"Aggregated beta: {meta_beta}")
             print(f"Aggregated se: {meta_se}")
+        else:
+            aggregated_params = {
+                "SIMPLE_META_ANALYSIS_COMPLETED": False,
+            }
 
         # RUN GWAMA
         # Meta-analysis using GWAMA
@@ -177,7 +201,7 @@ class GWASMetaAggregator(ModelAggregator):
             print(f"GWAMA stderr:\n{result.stderr}")
 
         return FLModel(
-            params={"SUCCESS": True},
+            params=aggregated_params,
             params_type=self.received_params_type,
         )
 
@@ -192,7 +216,7 @@ class GWASMetaAggregator(ModelAggregator):
 
 def define_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--n_clients", type=int, default=5)
+    parser.add_argument("--n_clients", type=int, default=10)
     parser.add_argument("--num_rounds", type=int, default=1)
 
     return parser.parse_args()
@@ -220,7 +244,7 @@ def main():
     # env = SimEnv(num_clients=n_clients)
     
     # Production Environment (FL Server on AWS and clients on NVIDIA Brev)
-    env = ProdEnv(startup_kit_location="/home/ubuntu/hroth@nvidia.com", username="hroth@nvidia.com")
+    env = ProdEnv(startup_kit_location="/home/ubuntu/hroth@nvidia.com", username="hroth@nvidia.com", login_timeout=300)
     
     run = recipe.execute(env)
     print()
