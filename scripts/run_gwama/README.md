@@ -65,10 +65,10 @@ SNP3	A	C	-9	1.016838	0.058183	0.902800	1.145280	0.275127	0.783218	0.106117	0.000
 
 ### run GWAS for each site (mock up data)
 
-See instrunctions in `data/run_mock_gwas_w_plink/README.md`
+See instructions in `scripts/run_gwama/run_mock_gwas_w_plink/README.md`
 
 ```{bash}
-cd data/run_gwama/run_mock_gwas_w_plink
+cd scripts/run_gwama/run_mock_gwas_w_plink
 bash run_gwas.sh
 cd ..   
 ```

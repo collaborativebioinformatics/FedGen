@@ -236,4 +236,4 @@ ldak*.linux
 ldak*.mac
 
 # GWAMA
-data/run_gwama/GWAMA*
+scripts/run_gwama/GWAMA*

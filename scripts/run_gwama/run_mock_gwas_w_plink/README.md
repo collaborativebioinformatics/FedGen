@@ -24,7 +24,7 @@ Download and install the `plink2` binary file for your OS from https://www.cog-g
 
 # run the GWAS analysis
 ```{bash}
-cd data/run_gwama/run_mock_gwas_w_plink
+cd scripts/run_gwama/run_mock_gwas_w_plink
 bash run_gwas.sh
 ```
 
