@@ -203,7 +203,21 @@ Monitor logs and outputs to confirm successful completion.
 
 ---
 
-## 8. Run GWAS Meta-Analysis using GWAMA from GWAS results generated across sites
+## 8. Run Federated GWAS Job (NVFLARE)
+
+Instead of running REGENIE independently on each site and manually aggregating results, you can submit a federated GWAS job that automates the entire workflow across all sites using NVIDIA FLARE.
+
+The federated job handles:
+- Distributing analysis scripts to all clients
+- Running local GWAS analysis using REGENIE on each site
+- Collecting summary statistics from all sites
+- Performing meta-analysis using GWAMA on the server
+
+**For complete instructions on submitting federated GWAS jobs, see [`jobs/fed_gwas/README.md`](jobs/fed_gwas/README.md).**
+
+---
+
+## 9. Run GWAS Meta-Analysis using GWAMA from GWAS results generated across sites
 
 - Convert REGENIE output to GWAMA input format
 - Create Input File List
@@ -212,7 +226,7 @@ Monitor logs and outputs to confirm successful completion.
 
 ---
 
-## 9. Notes & Best Practices
+## 10. Notes & Best Practices
 
 * Use **one Brev instance per NVFLARE client**
 * Always run NVFLARE client inside a virtual environment
@@ -260,6 +274,13 @@ FedGen/
 │   ├── download_site_from_s3.sh       # Download site data from S3
 │   ├── run_regenie_site.sh            # Run REGENIE GWAS analysis
 │   └── generate_federated_sites.sh    # Generate synthetic data (admin)
+├── jobs/
+│   └── fed_gwas/                      # Federated GWAS job
+│       ├── client.py                  # Client local training script
+│       ├── model.py                   # Model definition
+│       ├── job.py                     # Job orchestration script
+│       ├── requirements.txt           # Python dependencies
+│       └── README.md                  # Job-specific documentation
 ├── tools/
 │   └── ldak6.1.mac                    # LDAK binary (gitignored)
 ├── data/
