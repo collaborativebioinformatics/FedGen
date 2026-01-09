@@ -14,8 +14,9 @@ This container automates GWAS meta-analysis using GWAMA, converting REGENIE outp
 ```bash
 docker run --platform=linux/amd64 \
   -v /path/to/data:/data \
+  -v /path/to/output:/out \
   ghcr.io/collaborativebioinformatics/gwama \
-  <mode> <output_prefix> <site1_regenie> [site2_regenie] ...
+  -o /out <mode> <output_prefix> <site1_regenie> [site2_regenie] ...
 ```
 
 docker run --platform=linux/amd64 -v /Users/espehage/Repositories/Fed_learning_infrastructure/resources/site1_gwas_results:/data -it ghcr.io/collaborativebioinformatics/gwama or gwama_meta /data/regenie_step2_Phen1.regenie
@@ -30,9 +31,9 @@ docker run --platform=linux/amd64 -v /Users/espehage/Repositories/Fed_learning_i
 ```bash
 docker run --platform=linux/amd64 \
   -v /Users/espehage/resources:/data \
-  -v /Users/espehage/output:/output \
+  -v /Users/espehage/output:/out \
   ghcr.io/collaborativebioinformatics/gwama \
-  or meta_analysis /data/site1.regenie /data/site2.regenie /data/site3.regenie
+  -o /out or meta_analysis /data/site1.regenie /data/site2.regenie /data/site3.regenie
 ```
 
 ### Example: Quantitative Trait
@@ -40,8 +41,9 @@ docker run --platform=linux/amd64 \
 ```bash
 docker run --platform=linux/amd64 \
   -v /Users/espehage/resources:/data \
+  -v /Users/espehage/output:/out \
   ghcr.io/collaborativebioinformatics/gwama \
-  qt meta_results /data/site1.regenie /data/site2.regenie
+  -o /out qt meta_results /data/site1.regenie /data/site2.regenie
 ```
 
 ## Important: Volume Mounting
@@ -64,7 +66,7 @@ docker run -v /Users/espehage/resources:/data ... gwama or meta /data/site1.rege
 
 ## Output Files
 
-Results are saved in the container's `/work/gwama_analysis/` directory:
+Results are saved in the container's `/home/` directory by default, or in the directory specified with `-o/--outdir`.
 
 - `<output_prefix>.out` - Main GWAMA meta-analysis results
 - `<output_prefix>.err.out` - Error log from GWAMA
@@ -76,9 +78,9 @@ To access results from your host, mount an output volume:
 ```bash
 docker run --platform=linux/amd64 \
   -v /data/gwas:/input \
-  -v /data/output:/output \
+  -v /data/output:/out \
   ghcr.io/collaborativebioinformatics/gwama \
-  or meta /input/site1.regenie /input/site2.regenie
+  -o /out or meta /input/site1.regenie /input/site2.regenie
 ```
 
 Then retrieve results from `/output/`.

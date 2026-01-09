@@ -6,7 +6,7 @@ set -euo pipefail
 # Converts REGENIE results to GWAMA format and runs meta-analysis
 #
 # Usage:
-#   entrypoint.gwama.sh <mode> <output_prefix> <site1_regenie_file> [site2_regenie_file] ...
+#   entrypoint.gwama.sh [--outdir DIR|-o DIR] <mode> <output_prefix> <site1_regenie_file> [site2_regenie_file] ...
 #
 # Arguments:
 #   mode: 'or' for odds ratio (case-control) or 'qt' for quantitative trait
@@ -14,7 +14,7 @@ set -euo pipefail
 #   regenie_files: paths to .regenie output files (one per site)
 #
 # Example:
-#   entrypoint.gwama.sh or gwama_results /data/site1.regenie /data/site2.regenie
+#   entrypoint.gwama.sh -o /output or gwama_results /data/site1.regenie /data/site2.regenie
 
 # Show help
 if [ $# -eq 0 ] || [[ "$1" == "--help" || "$1" == "-h" ]]; then
@@ -22,16 +22,17 @@ if [ $# -eq 0 ] || [[ "$1" == "--help" || "$1" == "-h" ]]; then
 GWAMA Meta-Analysis Pipeline
 
 Usage:
-  entrypoint.gwama.sh <mode> <output_prefix> <site1_regenie_file> [site2_regenie_file] ...
+  entrypoint.gwama.sh [--outdir DIR|-o DIR] <mode> <output_prefix> <site1_regenie_file> [site2_regenie_file] ...
 
 Arguments:
   mode: 'or' for odds ratio (case-control) or 'qt' for quantitative trait
   output_prefix: prefix for GWAMA output files
   regenie_files: paths to .regenie output files (one per site, use absolute paths or mount volumes)
+  --outdir, -o: output directory inside container (default: /home)
 
 Example:
-  docker run -v /path/to/data:/data ghcr.io/collaborativebioinformatics/gwama \
-    or gwama_results /data/site1.regenie /data/site2.regenie
+  docker run -v /path/to/data:/data -v /path/to/output:/out ghcr.io/collaborativebioinformatics/gwama \
+    -o /out or gwama_results /data/site1.regenie /data/site2.regenie
 
 Note:
   Use absolute paths or mount input data with -v flag. Relative paths from host do not work in containers.
@@ -39,17 +40,53 @@ EOF
     exit 0
 fi
 
-if [ $# -lt 3 ]; then
+# Defaults
+OUTDIR="/home"
+
+# Collect positional args after consuming options (options can appear anywhere)
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -o|--outdir)
+            if [[ $# -lt 2 ]]; then
+                echo "Error: --outdir requires a directory path"
+                exit 1
+            fi
+            OUTDIR="$2"
+            shift 2
+            ;;
+        -h|--help)
+            exec "$0" --help
+            ;;
+        --)
+            shift
+            while [[ $# -gt 0 ]]; do
+                POSITIONAL+=("$1")
+                shift
+            done
+            ;;
+        -*)
+            echo "Error: Unknown option: $1"
+            echo "Run with --help for usage."
+            exit 1
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ ${#POSITIONAL[@]} -lt 3 ]; then
     echo "Error: Insufficient arguments"
-    echo "Usage: $0 <mode> <output_prefix> <site1_regenie_file> [site2_regenie_file] ..."
+    echo "Usage: $0 [--outdir DIR|-o DIR] <mode> <output_prefix> <site1_regenie_file> [site2_regenie_file] ..."
     echo "Run with --help for more information"
     exit 1
 fi
 
-mode="$1"
-output_prefix="$2"
-shift 2
-regenie_files=("$@")
+mode="${POSITIONAL[0]}"
+output_prefix="${POSITIONAL[1]}"
+regenie_files=("${POSITIONAL[@]:2}")
 
 # Validate mode
 if [[ ! "$mode" =~ ^(or|qt)$ ]]; then
@@ -65,8 +102,8 @@ echo "Output prefix: $output_prefix"
 echo "Number of sites: ${#regenie_files[@]}"
 echo ""
 
-# Create working directory
-WORKDIR="/work/gwama_analysis"
+# Create/ensure output directory and work there
+WORKDIR="$OUTDIR"
 mkdir -p "$WORKDIR"
 cd "$WORKDIR"
 
