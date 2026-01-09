@@ -12,6 +12,218 @@
 7. Ioannis Christofilogiannis
 8. Konstantinos Koukoutegos
 
+
+## Quickstart -- Server and clients configuration
+
+---
+
+### 1. Start NVFLARE Dashboard on AWS
+
+Follow the official NVFLARE documentation exactly:
+
+📖 **NVFLARE Cloud Deployment – Create Dashboard on AWS**
+[https://nvflare.readthedocs.io/en/2.4/real_world_fl/cloud_deployment.html#create-dashboard-on-aws](https://nvflare.readthedocs.io/en/2.4/real_world_fl/cloud_deployment.html#create-dashboard-on-aws)
+
+High‑level summary:
+
+* Create required AWS resources (EC2, security groups, IAM role)
+* Install Docker & NVFLARE Dashboard
+* Expose dashboard ports (typically 443 / 8443)
+* Verify dashboard access from browser
+
+> Refer to the official docs for the authoritative and up‑to‑date AWS steps.
+
+---
+
+### 2. Start NVFLARE Client on Brev
+
+#### 2.1 Create GPU Instance on Brev
+
+On the **Brev website**:
+
+* Create **1 GPU instance** per site
+* Example configuration:
+
+  * Name: `site1`
+  * GPU: **1× NVIDIA L4**
+  * CPU: **16 cores**
+  * RAM: **64 GB**
+
+---
+
+#### 2.2 Connect to the Instance
+
+```bash
+brev shell site1
+```
+
+Use terminal multiplexer to ensure connection persistence (Optional but recommended)
+
+```bash
+tmux new -s nvflare
+```
+
+---
+
+#### 2.3 Python Environment Setup
+
+```bash
+python3 -m venv venv_nvflare
+source venv_nvflare/bin/activate
+
+pip install nvflare[PT] torch torchvision tensorboard
+```
+
+Verify installation:
+
+```bash
+nvflare --version
+```
+
+---
+
+### 3. Copy and Start NVFLARE Client Startup Kit
+
+#### 3.1 Copy Client Kit from Local Machine
+
+On **local machine**:
+
+```bash
+brev copy <local_path_to_client_kit> site1:<remote_path>
+```
+
+On **Brev instance**:
+
+```bash
+sudo apt update
+sudo apt install -y unzip
+
+unzip -d <client_name> -P <PIN> <client_kit.zip>
+cd <client_name>
+```
+
+#### 3.2 Start NVFLARE Client
+
+```bash
+./startup/start.sh
+```
+
+Check logs to confirm successful connection to the NVFLARE server/dashboard.
+
+---
+
+### 4. Install AWS CLI on Each Brev Instance
+
+From your **home directory**:
+
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+```
+
+Verify:
+
+```bash
+aws --version
+```
+
+---
+
+#### 4.1 Configure AWS Credentials (Securely)
+
+```bash
+aws configure
+```
+
+Use **one** of the following secure approaches:
+
+* IAM role attached to the instance (**recommended**)
+* Environment variables (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`)
+* AWS credentials file
+
+Example (DO NOT hardcode secrets):
+
+```
+AWS Access Key ID:     <YOUR_ACCESS_KEY>
+AWS Secret Access Key: <YOUR_SECRET_KEY>
+Default region name:  None
+Default output format: None
+```
+
+---
+
+### 5. Clone FedGen Repository
+
+```bash
+git clone https://github.com/collaborativebioinformatics/FedGen
+chmod +x FedGen/scripts/*.sh
+```
+
+---
+
+### 6. Download Site Data from S3
+
+```bash
+cd ~
+mkdir -p data
+cd data
+
+./../FedGen/scripts/download_site_from_s3.sh <siteNumber>
+```
+
+Where:
+
+* `<siteNumber>` corresponds to the site ID (e.g. `1`, `2`, `3`)
+
+---
+
+### 7. Optional: Run Regenie Per Site (Outside NVFLARE)
+
+Run Regenie independently per site not through NVFLARE, to verify all dependencies are working
+
+```bash
+cd ~/data
+./../FedGen/scripts/run_regenie_site.sh <siteNumber>
+```
+
+Monitor logs and outputs to confirm successful completion.
+
+---
+
+### 8. Notes & Best Practices
+
+* Use **one Brev instance per NVFLARE client**
+* Always run NVFLARE client inside a virtual environment
+* Prefer **IAM roles** over static AWS credentials
+* Validate GPU availability:
+
+  ```bash
+  nvidia-smi
+  ```
+* Use `tmux` or `screen` to keep long‑running jobs alive
+
+---
+
+### 9. References
+
+* NVFLARE Documentation:
+  [https://nvflare.readthedocs.io/](https://nvflare.readthedocs.io/)
+
+* FedGen Repository:
+  [https://github.com/collaborativebioinformatics/FedGen](https://github.com/collaborativebioinformatics/FedGen)
+
+* Brev Platform:
+  [https://brev.dev](https://brev.dev)
+
+
+
+
+
+
+
+# Manuscript
+
 ## Introduction
 Large-scale genomic studies increasingly rely on multi-site collaboration to achieve sufficient statistical power for complex disease analysis. However, sharing individual-level genomic data across institutions is often constrained by privacy regulations, ethical considerations, and governance policies. Federated learning (FL) offers a promising paradigm to address these challenges by enabling collaborative model training without centralizing raw data. This project aims to design and evaluate an end-to-end federated learning framework for genome-wide association–style analyses using realistically simulated genotype and phenotype data. Synthetic genomic datasets are generated to closely resemble real-world data properties, including linkage disequilibrium (LD) structure, per-site variability, covariates, and site-level data imbalance. On top of this synthetic data layer, a federated learning infrastructure is deployed using an FL server–client architecture using NVFlare on AWS. Multiple client sites represent independent data holders with heterogeneous sample sizes and phenotype distributions, while our learning task is focused on binary phenotype prediction (Parkinson’s disease case/control status) using a logistic regression predictor.
 
@@ -41,10 +253,6 @@ Within the GWAS world, there are two well-established approaches for performing 
 ## Results
 
 ## Future direction
-
-
-
-
 
 
 
