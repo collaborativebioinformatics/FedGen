@@ -35,13 +35,14 @@ class GWASMetaAggregator(ModelAggregator):
     inverse-variance weighted meta-analysis during aggregation.
     """
 
-    def __init__(self, output_dir="./server_results"):
+    def __init__(self, output_dir="./server_results", simple_meta_analysis=False):
         super().__init__()
         self.client_betas = []
         self.client_ses = []
         self.received_params_type = None
         self.output_dir = output_dir
         self.gwama_input_file = os.path.join(self.output_dir, "gwama.in")
+        self.simple_meta_analysis = simple_meta_analysis
         
         # Create output directory if it doesn't exist
         os.makedirs(self.output_dir, exist_ok=True)
@@ -119,24 +120,27 @@ class GWASMetaAggregator(ModelAggregator):
         """
         Perform inverse-variance weighted GWAS meta-analysis.
         """
-        betas = np.stack(self.client_betas, axis=0)  # (K, P)
-        ses = np.stack(self.client_ses, axis=0)      # (K, P)
 
-        variances = ses ** 2
-        weights = 1.0 / variances
+        if self.simple_meta_analysis:
+            # Simple meta-analysis
+            betas = np.stack(self.client_betas, axis=0)  # (K, P)
+            ses = np.stack(self.client_ses, axis=0)      # (K, P)
 
-        # Meta-analysis estimates
-        meta_beta = np.sum(weights * betas, axis=0) / np.sum(weights, axis=0)
-        meta_var = 1.0 / np.sum(weights, axis=0)
-        meta_se = np.sqrt(meta_var)
+            variances = ses ** 2
+            weights = 1.0 / variances
 
-        aggregated_params = {
-            "beta": meta_beta,
-            "se": meta_se,
-        }
+            # Meta-analysis estimates
+            meta_beta = np.sum(weights * betas, axis=0) / np.sum(weights, axis=0)
+            meta_var = 1.0 / np.sum(weights, axis=0)
+            meta_se = np.sqrt(meta_var)
 
-        print(f"Aggregated beta: {meta_beta}")
-        print(f"Aggregated se: {meta_se}")
+            aggregated_params = {
+                "beta": meta_beta,
+                "se": meta_se,
+            }
+
+            print(f"Aggregated beta: {meta_beta}")
+            print(f"Aggregated se: {meta_se}")
 
         # RUN GWAMA
         # Meta-analysis using GWAMA
@@ -173,7 +177,7 @@ class GWASMetaAggregator(ModelAggregator):
             print(f"GWAMA stderr:\n{result.stderr}")
 
         return FLModel(
-            params=aggregated_params,
+            params={"SUCCESS": True},
             params_type=self.received_params_type,
         )
 
